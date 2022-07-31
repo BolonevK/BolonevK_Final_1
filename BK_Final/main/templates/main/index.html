@@ -1,0 +1,28 @@
+{% extends 'main/main.html' %}
+{% load main_tags %}
+
+{% block content %}
+
+<ul class="list-articles">
+	{% for p in prod %}
+	<li><div class="article-panel">
+	<p class="first">{{p.cat}}</p>
+	</div>
+
+	{% if p.image %}
+		<p><img class="img-article-left thumb" src="{{ p.image.url }}"></p>
+	{% endif %}
+
+	<li><h2>{{p.name}}</h2>
+	{% autoescape on %}
+	{{p.p_text|linebreaks|truncatewords:50}}
+	{% endautoescape %}
+	<div class="clear"></div>
+	<p>Цена: {{p.coast}} руб.</p>
+	<p class="link-read-post"><a href="{{ p.get_absolute_url }}">Подробней</a>
+		<a href="{% url 'add_box' p.id %}">Добавить в корзину</a></p>
+	</li>
+	{% endfor %}
+</ul>
+
+{% endblock %}
