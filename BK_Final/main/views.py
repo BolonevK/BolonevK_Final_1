@@ -3,12 +3,14 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .models import *
 
-# menu = [{'title': "О сайте", 'url_name': 'about'},
-#         {'title': "Добавить статью", 'url_name': 'add_page'},
-#         {'title': "Обратная связь", 'url_name': 'contact'},
-# ]
+menu = [{'title': "О проекте", 'url_name': 'about'},
+        {'title': "Посмотреть корзину", 'url_name': 'shoe_box'},
+        {'title': "Посмотреть заказы", 'url_name': 'show_order'},
+        {'title': "Регистрация ", 'url_name': 'register'},
+        {'title': "Войти ", 'url_name': 'login'},
+]
 
-menu = ["О сайте", "Добавить статью", "Обратная связь", "Войти"]
+# menu = ["О сайте", "Добавить статью", "Обратная связь", "Войти"]
 
 # @csrf_exempt
 # def tests(request):
@@ -17,6 +19,10 @@ menu = ["О сайте", "Добавить статью", "Обратная св
 #         return render(request, 'main/main.html',context={"title" : 'Hello world GET'})
 #     if request.method == "POST":
 #         return HttpResponse('Hello world POST')
+
+
+def about(request):
+    return render(request, 'main/about.html')
 
 def index(request):
     prod = Products.objects.all()
@@ -50,11 +56,20 @@ def show_prod(request, prod_id):
 def add_box(request,prod_id):
     print(f'Добавление товара с ид {prod_id} в корзину ')
     # usr =
-    prod = Products.objects.filter(pk=prod_id)
-    print(f'тегория выбранного товара {prod.model.cat_id}')
+    prod = Products.objects.get(pk=prod_id)
+    print(f'тегория выбранного товара {prod.cat_id}')
     context = {
         'prod': prod,
         'menu': menu,
 
     }
     return render(request, 'main/index.html', context=context)
+
+def show_box(request):
+    pass
+
+def login(request):
+    return HttpResponse('Autorisation')
+
+def register(request):
+    pass
