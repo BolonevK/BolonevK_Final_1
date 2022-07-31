@@ -1,0 +1,31 @@
+{% extends 'main/main.html' %}
+
+{% block content %}
+<ul>
+<li>Цена: {{ prod.coast }}</li>
+<li>Остаток: {{ prod.balance }} шт.</li>
+</ul>
+<p class="link-add-box">
+
+    <a href="{% url 'add_box' prod.id %}">Добавить в корзину</a></p>
+
+    <h1>{{prod.name}}</h1>
+
+    {% if prod.image %}
+        <p><img class="img-article-left" src="{{prod.image.url}}"></p>
+    {% endif %}
+
+    {{prod.p_text|linebreaks}}
+
+<p class="link-read-post"><a href="{% url 'add_feedback' prod.id %}">Оставить отзыв</a></p>
+<h2>Средняя оценка: {{ sr }}</h2>
+<h2>Отзывы о продукте: </h2>
+
+{% for f in fb %}
+	<li>Оценка : {{ f.fb_mark }}
+        <p>Клиент : {{ f.user.first_name }} {{ f.user.last_name }}</p>
+		<p>Описание : {{ f.fb_text }}</p>
+	</li>
+{% endfor %}
+
+{% endblock %}

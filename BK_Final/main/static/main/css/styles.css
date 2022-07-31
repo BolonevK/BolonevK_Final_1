@@ -41,6 +41,17 @@ p.link-read-post a {
 	text-decoration: none;
 }
 
+p.link-add-box {
+	text-align: right;
+}
+p.link-add-box a {
+	padding: 10px;
+	min-width: 100px;
+	background: #737373;
+	color: #fff;
+	text-decoration: none;
+}
+
 div.article-panel {
     background: #eee;
     padding: 5px 10px 5px 10px;
