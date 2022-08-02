@@ -1,3 +1,10 @@
+	<td valign="top" class="left-chapters">
+	<ul id="leftchapters">
+{% if sel_cat == 0 %}
+		<li class="selected">Все категории</li>
+{% else %}
+		<li><a href="{% url 'home' %}">Все категории</a></li>
+{% endif %}
 {% for c in cats %}
 	{% if c.pk == sel_cat %}
 		<li class="selected">{{c.name}}</li>
