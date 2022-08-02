@@ -13,12 +13,14 @@ urlpatterns = [
     path('add_box/<int:prod_id>', add_box, name='add_box'),
     path('add_feedback/<int:prod_id>', add_feedback, name='add_feedback'),
     # path('add_feedback/<int:prod_id>', AddFeedback.as_view(), name='add_feedback'),
-    path('show_box/', show_box, name='show_box'),
-    path('show_order/', show_order, name='show_order'),
+    # path('show_box/', show_box, name='show_box'),
+    path('show_box/', ShowBox.as_view(), name='show_box'),
     path('login/', LoginUser.as_view(), name='login'),
     path('logout/', logout_user, name='logout_user'),
     # path('register/', register, name='register'),
     path('register/', RegisterUser.as_view(), name='register'),
+    path('make_order/<int:order_id>', make_order, name='make_order'),
+    path('order_list/', OrderList.as_view(), name='order_list'),
 
 
 ]

@@ -64,6 +64,8 @@ class Orders(models.Model):
     transfer = models.BooleanField(default=False)       # флаг отгрузки, показывает отгружен ли товар
     box = models.BooleanField(default=True)     # флаг корзины, показывает является ли заказ еще корзиной или оформленым заказом.
 
+    def get_absolute_url(self):     # cтандартная функция получения абсолютной ссылки
+        return reverse('make_order', kwargs={'order_id': self.pk})
 
 class OrderItems(models.Model):     # класс компонет заказа
     order = models.ForeignKey(Orders, on_delete=models.CASCADE)        # ссылка на заказ

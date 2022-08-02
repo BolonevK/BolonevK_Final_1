@@ -1,0 +1,25 @@
+{% extends 'main/main.html' %}
+{% load main_tags %}
+
+{% block content %}
+
+<ul class="list-articles">
+	{% for o in order %}
+	<li><div class="article-panel">
+	<p class="first">{{p.cat}}</p>
+	</div>
+	<li><h2>Номер заказа: {{o.id}}</h2>
+	<p>Сумма заказа : {{o.coast}} </p>
+	<p>Дата создания заказа : {{o.date_create}} </p>
+	<p>Оплачен: {{o.pay_it}} </p>
+	<p>Отгружен : {{o.transfer}} </p>
+	<p>Корзина : {{o.box}} </p>
+
+	<div class="clear"></div>
+	<p class="link-read-post"><a href="{% url 'show_box' %}">Подробней</a>
+
+	</li>
+	{% endfor %}
+</ul>
+
+{% endblock %}

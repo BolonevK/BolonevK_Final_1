@@ -1,0 +1,32 @@
+{% extends 'main/main.html' %}
+{% load main_tags %}
+
+{% block content %}
+<h1>Итоговая сумма заказа: {{ order.0.order.coast }} руб. </h1>
+<p class="link-add-box" ><a href="{{ order.0.order.get_absolute_url }}">Оформить заказ</a></p>
+
+<ul class="list-articles">
+	{% for o in order %}
+	<li><div class="article-panel">
+	<p class="first">{{p.cat}}</p>
+	</div>
+
+	{% if o.item.image %}
+		<p><img class="img-article-left thumb" src="{{ o.item.image.url }}"></p>
+	{% endif %}
+
+	<li><h2>{{o.item.name}}</h2>
+	{% autoescape on %}
+	{{o.item.p_text|linebreaks|truncatewords:40}}
+	{% endautoescape %}
+	<div class="clear"></div>
+	<p>Цена: {{o.item.coast}} руб.</p>
+	<p>количество в корзине: {{ o.i_count }}</p>
+
+	<p class="link-read-post"><a href="{{ o.item.get_absolute_url }}">Подробней</a>
+
+	</li>
+	{% endfor %}
+</ul>
+
+{% endblock %}

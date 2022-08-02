@@ -13,11 +13,12 @@ from .models import *
 
 
 # user: root1, pass: testpass
+# user: vasay, pass: 1qazcde3
 
 
 menu = [{'title': "О проекте", 'url_name': 'about'},
         {'title': "Посмотреть корзину", 'url_name': 'show_box'},
-        {'title': "Посмотреть заказы", 'url_name': 'show_order'},
+        {'title': "Посмотреть заказы", 'url_name': 'order_list'},
         {'title': "Регистрация ", 'url_name': 'register'},
         {'title': "Выйти", 'url_name': 'logout_user'},
         {'title': "Войти ", 'url_name': 'login'},
@@ -40,6 +41,22 @@ class MarketMain(ListView):
         context['sel_cat'] = 0
         return context
 
+class ShowBox(ListView):
+    # model = Products
+    model = OrderItems
+    template_name = 'main/show_box.html'
+    context_object_name = 'order'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        context['title'] = 'Корзина покупателя'
+        context['sel_cat'] = 0
+        return context
+
+    def get_queryset(self):
+        user_box = Orders.objects.get(user_id=self.request.user.pk, box= True)
+        return OrderItems.objects.filter(order_id=user_box.pk)
 class ShowCat(ListView):            # Отображение товара по категориям
     model = Products                # указание модель на основе которой будет строиться форма
     template_name = 'main/index.html'  # адрес страницы, для для создания формы
@@ -54,6 +71,20 @@ class ShowCat(ListView):            # Отображение товара по �
         context['title'] = 'Категория - '+ str(context['prod'][0].cat)
         context['sel_cat'] = context['prod'][0].cat_id,
         return context
+
+class OrderList(ListView):
+    model = Orders
+    template_name = 'main/order_list.html'
+    context_object_name = 'order'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['menu'] = menu
+        context['title'] = 'Заказы покупателя'
+        context['sel_cat'] = 0
+        return context
+    def get_queryset(self):
+        return Orders.objects.filter(user_id=self.request.user.pk)
 
 class ShowProd(DetailView):
     model = Products  # указание модель на основе которой будет строиться форма
@@ -114,15 +145,26 @@ class ShowProd(DetailView):
 #     }
 #     return render(request, 'main/show_prod.html', context=context)
 
+
 def add_box(request,prod_id):
-    prod = Products.objects.get(pk=prod_id)
-    print(f'тегория выбранного товара {prod.cat_id}')
-    context = {
-        'prod': prod,
-        'menu': menu,
-    }
-    # return render(request, 'main/index.html', context=context)
-    return redirect('prod', prod_id)
+    if request.user.is_authenticated:
+        prod = Products.objects.get(pk=prod_id)
+        print(f'тегория выбранного товара {prod.cat_id}')
+        try:# Проверка на существование товара в корзине клиента
+            user_box = Orders.objects.get(user_id=request.user.pk, box= True)
+            user_box.coast += prod.coast
+        except:
+            user_box = Orders(user= request.user, coast= prod.coast)
+        user_box.save()
+        try:
+            oitem = OrderItems.objects.get(order_id=user_box.pk, item_id=prod.pk)
+            oitem.i_count += 1
+        except:
+            oitem = OrderItems(order_id=user_box.pk, item_id=prod.pk, i_count=1)
+        oitem.save()
+        return redirect('prod', prod_id)
+    else:
+        return redirect('login')
 
 def add_feedback(request,prod_id):
     if request.method == 'POST':
@@ -147,9 +189,11 @@ def add_feedback(request,prod_id):
     }
     return render(request,'main/feedback.html',context=context)
 
-def show_box(request):
-    pass
-
+def make_order(request,order_id):
+    order = Orders.objects.get(pk=order_id)
+    order.box = False
+    order.save()
+    return redirect('order_list')
 def show_order(request):
     pass
 
