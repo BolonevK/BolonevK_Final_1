@@ -16,7 +16,7 @@
 	<p>Корзина : {{o.box}} </p>
 
 	<div class="clear"></div>
-	<p class="link-read-post"><a href="{% url 'show_box' %}">Подробней</a>
+	<p class="link-read-post"><a href="{% url 'show_box' o.pk %}">Подробней</a>
 
 	</li>
 	{% endfor %}

@@ -39,6 +39,18 @@ p.link-read-post a {
 	background: #737373;
 	color: #fff;
 	text-decoration: none;
+
+}p.link-pay-post {
+	text-align: center;
+	background: #ed755a;
+}
+
+p.link-pay-post a {
+	padding: 10px;
+	min-width: 100px;
+	background: #ed755a;
+	color: #fff;
+	text-decoration: none;
 }
 
 p.link-add-box {
@@ -87,7 +99,7 @@ ul.list-articles li {
 .clear {clear: both;}
 
 .header {
-	background: #3F4137;
+	background: #565c6e;
 	height: 60px;
 }
 
@@ -103,7 +115,7 @@ ul.mainmenu {
 	padding: 0;
 	height: 60px;
 	color: #fdc073;
-	font-size: 14px;
+	font-size: 20px;
 	overflow: hidden;
 }
 ul.mainmenu li {

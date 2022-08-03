@@ -3,7 +3,15 @@
 
 {% block content %}
 <h1>Итоговая сумма заказа: {{ order.0.order.coast }} руб. </h1>
-<p class="link-add-box" ><a href="{{ order.0.order.get_absolute_url }}">Оформить заказ</a></p>
+{% if order.0.order.box == True %}
+	<p class="link-add-box" ><a href="{{ order.0.order.get_absolute_url }}">Оформить заказ</a></p>
+{% else %}
+		{% if order.0.order.pay_it == True %}
+			<p class="link-pay-post" >Оплачено</p>
+		{% else %}
+			<p class="link-add-box" ><a href="{% url 'pay_order' order.0.order.id %}">Оплатить</a></p>
+		{% endif %}
+{% endif %}
 
 <ul class="list-articles">
 	{% for o in order %}

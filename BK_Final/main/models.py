@@ -71,6 +71,7 @@ class OrderItems(models.Model):     # класс компонет заказа
     order = models.ForeignKey(Orders, on_delete=models.CASCADE)        # ссылка на заказ
     item = models.ForeignKey(Products, on_delete=models.CASCADE)       # ссыдка на товар
     i_count = models.IntegerField()        # количество товара
+    deleted = models.BooleanField(default=False)
 
 
 class FeedBack(models.Model):       # класс отзыва о товаре
