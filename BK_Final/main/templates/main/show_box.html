@@ -24,14 +24,17 @@
 	{% endif %}
 
 	<li><h2>{{o.item.name}}</h2>
-	{% autoescape on %}
-	{{o.item.p_text|linebreaks|truncatewords:40}}
-	{% endautoescape %}
 	<div class="clear"></div>
 	<p>Цена: {{o.item.coast}} руб.</p>
 	<p>количество в корзине: {{ o.i_count }}</p>
 
-	<p class="link-read-post"><a href="{{ o.item.get_absolute_url }}">Подробней</a>
+	<p class="link-read-post">
+		{% if order.0.order.box %}
+		<a href="{% url 'del_box' o.item.id %}">Удалить</a>
+		{% endif %}
+		<a href="{{ o.item.get_absolute_url }}">Подробней</a>
+
+	</p>
 
 	</li>
 	{% endfor %}

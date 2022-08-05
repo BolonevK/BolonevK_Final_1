@@ -7,7 +7,10 @@ class AddFeedbackForm(forms.Form):
     CHOICES = [('1', '1'), ('2', '2'), ('3', '3'), ('4', '4'), ('5', '5'),]
     fb_text = forms.CharField(widget=forms.Textarea(attrs={'cols' : 60, 'rows' : 10}), label="Отзыв")       # текст отзыва
     fb_mark = forms.ChoiceField(widget=forms.RadioSelect, choices=CHOICES, label='Выберите оценку')
-
+class DetailsUserForm(forms.Form):
+    # user.username = forms.CharField(label='Логин')
+    address = forms.CharField(label='Адрес', widget=forms.TextInput(attrs={'class': 'form-input'}))    # текст отзыва
+    phone = forms.CharField(label='Телефон', max_length=12, widget=forms.TextInput(attrs={'class': 'form-input'}))
 
 class RegisterUserForm(UserCreationForm):
     username = forms.CharField(label='Логин', widget=forms.TextInput(attrs={'class': 'form-input'}))

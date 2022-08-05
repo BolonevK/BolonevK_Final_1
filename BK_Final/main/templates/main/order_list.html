@@ -2,7 +2,16 @@
 {% load main_tags %}
 
 {% block content %}
+<ul class="list-articles">
+	<h1> {{ request.user.first_name }} {{ request.user.last_name }}</h1>
+	<li>Логин   : {{ request.user.username }} </li>
+	{% if client%}
+		<li>Телефон : {{ client.phone }} </li>
+		<li>Адрес   : {{ client.address }} </li>
+	{% endif %}
 
+<p class="link-read-post"><a href="{% url 'det_user' request.user.pk %}">Редактировать</a>
+</ul>
 <ul class="list-articles">
 	{% for o in order %}
 	<li><div class="article-panel">
@@ -11,13 +20,21 @@
 	<li><h2>Номер заказа: {{o.id}}</h2>
 	<p>Сумма заказа : {{o.coast}} </p>
 	<p>Дата создания заказа : {{o.date_create}} </p>
-	<p>Оплачен: {{o.pay_it}} </p>
-	<p>Отгружен : {{o.transfer}} </p>
-	<p>Корзина : {{o.box}} </p>
-
+	{% if o.coast == 0 %}
+		<p>Статус: <font color="#ff002f">Необходимо добавить товар в корзину</font></p>
+	{% elif o.box %}
+		<p>Статус: <font color="#ff522b">Необходимо оформить заказ</font></p>
+	{% elif not o.pay_it %}
+		<p>Статус: <font color="#ff522b">Необходимо оплатить заказ</font></p>
+	{% elif not o.transfer %}
+		<p>Статус: <font color="#ff522b">Ожидайте отгрузки товара</font></p>
+	{% else %}
+		<p>Статус: <font color="#187317">Заказ выполнен</font></p>
+	{% endif %}
 	<div class="clear"></div>
-	<p class="link-read-post"><a href="{% url 'show_box' o.pk %}">Подробней</a>
-
+	{% if o.coast > 0 %}
+		<p class="link-read-post"><a href="{% url 'show_box' o.pk %}">Подробней</a>
+	{% endif %}
 	</li>
 	{% endfor %}
 </ul>

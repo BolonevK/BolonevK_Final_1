@@ -12,7 +12,7 @@ class CategoriesAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('id' , 'user', 'date_create', 'coast', 'pay_it', 'transfer', 'box')
+    list_display = ('id' , 'user', 'Cl_address', 'Cl_phone', 'date_create', 'coast', 'pay_it', 'transfer', 'box')
     list_display_links = ('id' , 'user')
     search_fields = ('user', 'pey_it', 'date_create')
 

@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
+from django.contrib import admin
 
 
 
@@ -44,16 +45,7 @@ class Products(models.Model):         # класс продуктов(товар
 class Clients(models.Model):         # клиент
     user = models.OneToOneField(User, on_delete=models.CASCADE)      #  ссылка на встроеный класс User
     phone = models.CharField(max_length=12)      # телефон клиента
-    addres = models.CharField(max_length=200)        #  адрес клиента
-
-# @receiver(post_save, sender=User)
-# def create_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Clients.objects.create(user=instance)
-#
-# @receiver(post_save, sender=User)
-# def save_user_profile(sender, instance, **kwargs):
-#     instance.clients.save()
+    address = models.CharField(max_length=200)        #  адрес клиента
 
 
 class Orders(models.Model):
@@ -67,6 +59,13 @@ class Orders(models.Model):
     def get_absolute_url(self):     # cтандартная функция получения абсолютной ссылки
         return reverse('make_order', kwargs={'order_id': self.pk})
 
+    @admin.display(description='Client address')
+    def Cl_address(self):
+        return Clients.objects.get(user_id= self.user.pk).address
+
+    @admin.display(description='Client phone')
+    def Cl_phone(self):
+        return Clients.objects.get(user_id= self.user.pk).phone
 class OrderItems(models.Model):     # класс компонет заказа
     order = models.ForeignKey(Orders, on_delete=models.CASCADE)        # ссылка на заказ
     item = models.ForeignKey(Products, on_delete=models.CASCADE)       # ссыдка на товар

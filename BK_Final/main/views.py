@@ -14,9 +14,11 @@ from .utils import *
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 
+# user: root,  pass: testpassword
 # user: root1, pass: testpass
 # user: vasay, pass: 1qazcde3
 # user: user1, pass: userpass
+# user: user2, pass: petrpass
 
 
 menu = [{'title': "О проекте", 'url_name': 'about'},
@@ -25,7 +27,6 @@ menu = [{'title': "О проекте", 'url_name': 'about'},
         ]
 
 def about(request):
-
     return render(request, 'main/about.html', context={'menu' : menu})
 
 
@@ -55,8 +56,12 @@ class ShowBox(DataMixin,ListView):
         try:
             user_box = Orders.objects.get(user_id=self.request.user.pk, id=self.kwargs['order_id'])
         except:
-            raise Http404()
-        return OrderItems.objects.filter(order_id=user_box.pk)
+            if self.request.user.is_staff:
+                try:
+                    user_box = Orders.objects.get(id=self.kwargs['order_id'])
+                except:
+                    raise Http404()
+        return OrderItems.objects.filter(order_id=user_box.pk, i_count__gt=0)
 
 
 class ShowCat(DataMixin,ListView):            # Отображение товара по категориям
@@ -81,8 +86,12 @@ class OrderList(DataMixin,ListView):
 
     def get_context_data(self, *, object_list=None, **kwargs):
         context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Заказы')
-        return dict(list(context.items()) + list(c_def.items()))
+        try:
+            client = Clients.objects.get(user_id=self.request.user.pk)
+            c_def = self.get_user_context(title='Заказы', client=client)
+            return dict(list(context.items()) + list(c_def.items()))
+        except:
+            return context
     def get_queryset(self):
         try:
             ord = Orders.objects.filter(user_id=self.request.user.pk)
@@ -125,6 +134,18 @@ def add_box(request,prod_id):
     else:
         return redirect('login')
 
+def del_box(request,prod_id):
+    prod = Products.objects.get(pk=prod_id)
+    user_box = Orders.objects.get(user_id=request.user.pk, box=True)
+    user_box.coast -= prod.coast
+    user_box.save()
+    oitem = OrderItems.objects.get(order_id=user_box.pk, item_id=prod.pk)
+    oitem.i_count -= 1
+    oitem.save()
+    if OrderItems.objects.filter(order_id=user_box.pk, i_count__gt=0).exists():
+        return redirect('show_box', user_box.pk)
+    else:
+        return redirect('order_list')
 
 def add_feedback(request,prod_id):
     if request.user.is_authenticated:
@@ -149,8 +170,37 @@ def add_feedback(request,prod_id):
         return render(request,'main/feedback.html',context=context)
     else:
         return redirect('login')
+def det_user(request,user_id):
+    if request.user.is_authenticated:
+        if request.method == 'POST':
+            form = DetailsUserForm(request.POST)
+            if Clients.objects.filter(user_id=user_id).exists():
+                usr = Clients.objects.get(user_id=user_id)
+            else:
+                usr = Clients()
+                usr.user_id=user_id
+            usr.address=form.data['address']
+            usr.phone=form.data['phone']
+            usr.save()
+            return redirect('order_list')
+        else:
+            form = DetailsUserForm()
+            form.data['phone'] = '+7'
+        context = {
+            'menu': menu,
+            'title': 'Дополнительная информация',
+            'form' : form,
+        }
+        return render(request,'main/det_user.html',context=context)
+    else:
+        return redirect('login')
 
 def make_order(request,order_id):
+    oitems = OrderItems.objects.filter(order_id=order_id)
+    for oi in oitems:
+        pr = Products.objects.get(pk=oi.item_id)
+        pr.balance -= oi.i_count
+        pr.save()
     order = Orders.objects.get(pk=order_id)
     order.box = False
     order.save()
@@ -175,7 +225,7 @@ class RegisterUser(DataMixin,CreateView):
     def form_valid(self, form):
         user = form.save()
         login(self.request, user)
-        return redirect('home')
+        return redirect('det_user',user.pk)
 
 
 class LoginUser(DataMixin, LoginView):
