@@ -25,7 +25,7 @@ class Products(models.Model):         # класс продуктов(товар
     name = models.CharField(max_length=100, verbose_name='Наименование')      # наименование товара
     factory = models.CharField(max_length=250, verbose_name='Производитель')       #  производитель товара
     p_text = models.TextField(verbose_name='Описание')
-    image = models.ImageField(upload_to='media/', null=True, verbose_name='Изображение')        # картинка товара
+    image = models.ImageField(upload_to='media/', null=True, default='media/prod_none.png', verbose_name='Изображение')        # картинка товара
     balance = models.IntegerField(verbose_name='Остаток')        #  остаток на складе
     coast = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='Цена')         #  цена товара
     cat = models.ForeignKey(PCategories, on_delete=models.PROTECT, verbose_name='Категория')       #  категория к которой принадлежит товар

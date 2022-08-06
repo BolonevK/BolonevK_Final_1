@@ -33,7 +33,9 @@
     </connection>
   </component>
   <component name="DBNavigator.Project.DatabaseFileManager">
-    <open-files />
+    <open-files>
+      <object connection-id="6c62b855-2445-4044-b009-314bd5bf86fa" object-ref="schemas/public/tables/main_products" />
+    </open-files>
   </component>
   <component name="DBNavigator.Project.DatabaseSessionManager">
     <connection id="6c62b855-2445-4044-b009-314bd5bf86fa" />
@@ -43,6 +45,7 @@
     <filter-actions connection-id="6c62b855-2445-4044-b009-314bd5bf86fa" dataset="public.main_orders" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="6c62b855-2445-4044-b009-314bd5bf86fa" dataset="public.main_orderitems" active-filter-id="EMPTY_FILTER" />
     <filter-actions connection-id="6c62b855-2445-4044-b009-314bd5bf86fa" dataset="public.auth_user" active-filter-id="EMPTY_FILTER" />
+    <filter-actions connection-id="6c62b855-2445-4044-b009-314bd5bf86fa" dataset="public.main_products" active-filter-id="EMPTY_FILTER" />
   </component>
   <component name="DBNavigator.Project.EditorStateManager">
     <last-used-providers />

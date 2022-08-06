@@ -24,6 +24,14 @@ urlpatterns = [
     path('make_order/<int:order_id>', make_order, name='make_order'),
     path('pay_order/<int:order_id>', pay_order, name='pay_order'),
     path('order_list/', OrderList.as_view(), name='order_list'),
+# Для работы через API
+#     path('api/productlist/', ProductsAPIView.as_view()),
+    path('api/crud_prod/', ProductAPI_RC.as_view()),
+    path('api/crud_prod/<int:pk>/', ProductAPI_RUD.as_view()),
+    # path('api/crud_prod/<int:pk>/', ProductAPI_U.as_view()),
+  # path('api/crud_prod/', CRUD_Prod_API.as_view()),
+  #   path('api/crud_prod/<int:pk>/', CRUD_Prod_API.as_view()),
+
 
 
 ]

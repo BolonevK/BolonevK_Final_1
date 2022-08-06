@@ -3,16 +3,21 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.views import LoginView
 from django.db import transaction
+from django.forms import model_to_dict
 from django.shortcuts import render, Http404, HttpResponse, redirect
 from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg
 from django.views.generic import CreateView, ListView, DetailView
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from .forms import *
 from .models import *
 from .utils import *
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from rest_framework import generics
+from .serializers import *
 
 # user: root,  pass: testpassword
 # user: root1, pass: testpass
@@ -177,8 +182,8 @@ def det_user(request,user_id):
             if Clients.objects.filter(user_id=user_id).exists():
                 usr = Clients.objects.get(user_id=user_id)
             else:
-                usr = Clients()
-                usr.user_id=user_id
+                usr = Clients.objects(user_id=user_id).create()       # проверить переписаный функционал
+
             usr.address=form.data['address']
             usr.phone=form.data['phone']
             usr.save()
@@ -243,3 +248,51 @@ class LoginUser(DataMixin, LoginView):
 def logout_user(request):
     logout(request)
     return redirect('login')
+
+#================================ API ====================================
+
+class ProductAPI_RC(generics.ListCreateAPIView): # Класс для чтения и создания объекта в модели Products
+    queryset = Products.objects.all()           # Получаем queryset
+    serializer_class = ProductSerializer        # вызываем сериалайзер
+
+
+class ProductAPI_RUD(generics.RetrieveUpdateDestroyAPIView): # Класс для операци CRUD над объектом в модели Products
+    queryset = Products.objects.all()           # Получаем queryset
+    serializer_class = ProductSerializer        # вызываем сериалайзер
+
+
+# class CRUD_Prod_API(APIView):       # Класс для работы с моделью Products
+#     def get(self,request):
+#         prod = Products.objects.all()
+#         return Response({'prod': ProductSerializer(prod, many=True).data})
+#
+#     def post(self,request):
+#         serializer = ProductSerializer(data=request.data)  # проверка корректности принятых данных
+#         serializer.is_valid(raise_exception=True)      # устанавливаем параметр, который выдает адекватный ответ при некорректных данных
+#         serializer.save()
+#         return Response({'product' : serializer.data})
+#
+#     def put(self, request, *args, **kwargs):
+#         pk = kwargs.get("pk", None)     # проверка параметра pk запросе
+#         if not pk:
+#             return Response({"error": "не корректно указан необходимый параметр 'pk'"})   # ответ об ошибке
+#         try:
+#             instance = Products.objects.get(pk=pk)      # попытка считать объект по указанному параметру 'pk'
+#         except:
+#             return Response({"error": "Указанный объект не существует"})      # Вывод ошибки при осутствия обьекта с указанноым pk
+#         serializer = ProductSerializer(data=request.data, instance=instance)    # ериализация данных через update
+#         serializer.is_valid(raise_exception=True)   # проверка введенных данных
+#         serializer.save()   # сохранение изменений
+#         return Response({"product": serializer.data})  # ответ
+#
+#
+#     def delete(self,request, *args, **kwargs):
+#         pk = kwargs.get("pk", None)  # проверка параметра pk запросе
+#         if not pk:
+#             return Response({"error": "не корректно указан необходимый параметр 'pk'"})  # ответ об ошибке
+#         try:
+#             instance = Products.objects.get(pk=pk)      # попытка считать объект по указанному параметру 'pk'
+#         except:
+#             return Response({"error": "Указанный объект не существует"})      # Вывод ошибки при осутствия обьекта с указанноым pk
+#         instance.delete()
+#         return Response({"продукт с id = "+str(pk) + " успешно удален"})  # ответ
