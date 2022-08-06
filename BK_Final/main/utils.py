@@ -3,7 +3,6 @@ from django.db.models import Count, Sum
 from .models import *
 
 class DataMixin:
-    # paginate_by = 2
     def get_user_context(self, **kwargs):
         context = kwargs
 
@@ -11,6 +10,9 @@ class DataMixin:
         if not self.request.user.is_authenticated:
             user_menu.append({'title': "Регистрация ", 'url_name': 'register'})
             user_menu.append({'title': "Войти ", 'url_name': 'login'})
+        elif self.request.user.is_staff:
+            user_menu.append({'title': 'Логин : ' + self.request.user.username, 'url_name': 'order_list'})
+            user_menu.append({'title': "Админ панель ", 'url_name': 'admin'})
         else:
             try:
                 n_ord = Orders.objects.get(user_id=self.request.user.pk, box=True)
@@ -24,7 +26,7 @@ class DataMixin:
             else:
                 user_menu.append({'title': "Корзина: "+str(c_item), 'url_name': 'show_box', 'b_num' : n_ord.pk })
             user_menu.append({'title': 'Логин : '+self.request.user.username, 'url_name': 'order_list'})
-            user_menu.append({'title': "Выйти", 'url_name': 'logout_user'},)
+        user_menu.append({'title': "Выйти", 'url_name': 'logout_user'},)
         context['menu'] = user_menu
 
         if 'sel_cat' not in context:

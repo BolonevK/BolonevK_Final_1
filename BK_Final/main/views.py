@@ -9,14 +9,19 @@ from django.urls import reverse_lazy
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Avg
 from django.views.generic import CreateView, ListView, DetailView
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
+
 from .forms import *
 from .models import *
+from .permissions import IsAdminOrReadOnly
 from .utils import *
 from django.contrib.auth.mixins import LoginRequiredMixin
-from rest_framework import generics
+from rest_framework import generics, viewsets
 from .serializers import *
 
 # user: root,  pass: testpassword
@@ -26,18 +31,21 @@ from .serializers import *
 # user: user2, pass: petrpass
 
 
-menu = [{'title': "О проекте", 'url_name': 'about'},
+menu = [{'title': "О проекте", 'url_name': 'about'},    # Пункты меню по умолчанию (для функций)
         {'title': "Заказы", 'url_name': 'order_list'},
         {'title': "Выйти", 'url_name': 'logout_user'},
         ]
 
+# страница "О проекте"
 def about(request):
     return render(request, 'main/about.html', context={'menu' : menu})
 
+def admin_panel(request):
+    return render(request, '/admin/')
 
-
+# Гланая страница проекта
 class MarketMain(DataMixin,ListView):
-    model = Products
+    model = Products                    # строится на отображении обьектов модели Products
     template_name = 'main/index.html'
     context_object_name = 'prod'
 
@@ -182,7 +190,9 @@ def det_user(request,user_id):
             if Clients.objects.filter(user_id=user_id).exists():
                 usr = Clients.objects.get(user_id=user_id)
             else:
-                usr = Clients.objects(user_id=user_id).create()       # проверить переписаный функционал
+                usr = Clients()
+                usr.user_id=user_id
+                usr.save()
 
             usr.address=form.data['address']
             usr.phone=form.data['phone']
@@ -251,48 +261,19 @@ def logout_user(request):
 
 #================================ API ====================================
 
-class ProductAPI_RC(generics.ListCreateAPIView): # Класс для чтения и создания объекта в модели Products
-    queryset = Products.objects.all()           # Получаем queryset
-    serializer_class = ProductSerializer        # вызываем сериалайзер
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Products.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+
+    @action(methods=['get'], detail=False)
+    def category(self,request):
+        cats = PCategories.objects.all()
+        cat_dict = []
+        for c in cats:
+            cat_dict.append({'id': c.id,'name': c.name})
+        return Response({'category': cat_dict})
 
 
-class ProductAPI_RUD(generics.RetrieveUpdateDestroyAPIView): # Класс для операци CRUD над объектом в модели Products
-    queryset = Products.objects.all()           # Получаем queryset
-    serializer_class = ProductSerializer        # вызываем сериалайзер
 
 
-# class CRUD_Prod_API(APIView):       # Класс для работы с моделью Products
-#     def get(self,request):
-#         prod = Products.objects.all()
-#         return Response({'prod': ProductSerializer(prod, many=True).data})
-#
-#     def post(self,request):
-#         serializer = ProductSerializer(data=request.data)  # проверка корректности принятых данных
-#         serializer.is_valid(raise_exception=True)      # устанавливаем параметр, который выдает адекватный ответ при некорректных данных
-#         serializer.save()
-#         return Response({'product' : serializer.data})
-#
-#     def put(self, request, *args, **kwargs):
-#         pk = kwargs.get("pk", None)     # проверка параметра pk запросе
-#         if not pk:
-#             return Response({"error": "не корректно указан необходимый параметр 'pk'"})   # ответ об ошибке
-#         try:
-#             instance = Products.objects.get(pk=pk)      # попытка считать объект по указанному параметру 'pk'
-#         except:
-#             return Response({"error": "Указанный объект не существует"})      # Вывод ошибки при осутствия обьекта с указанноым pk
-#         serializer = ProductSerializer(data=request.data, instance=instance)    # ериализация данных через update
-#         serializer.is_valid(raise_exception=True)   # проверка введенных данных
-#         serializer.save()   # сохранение изменений
-#         return Response({"product": serializer.data})  # ответ
-#
-#
-#     def delete(self,request, *args, **kwargs):
-#         pk = kwargs.get("pk", None)  # проверка параметра pk запросе
-#         if not pk:
-#             return Response({"error": "не корректно указан необходимый параметр 'pk'"})  # ответ об ошибке
-#         try:
-#             instance = Products.objects.get(pk=pk)      # попытка считать объект по указанному параметру 'pk'
-#         except:
-#             return Response({"error": "Указанный объект не существует"})      # Вывод ошибки при осутствия обьекта с указанноым pk
-#         instance.delete()
-#         return Response({"продукт с id = "+str(pk) + " успешно удален"})  # ответ

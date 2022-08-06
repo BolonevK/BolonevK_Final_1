@@ -1,11 +1,17 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from .views import *
+from rest_framework import routers  # router для API
+
+router = routers.DefaultRouter()
+# router = routers.SimpleRouter()
+router.register(r'product', ProductViewSet)
 
 urlpatterns = [
     # path('', index, name='home'),
     path('', MarketMain.as_view(), name='home'),
     path('about/', about, name='about'),
+    path('admin/', admin_panel, name='admin'),
     # path('category/<int:cat_id>/', show_cat, name='category'),
     path('category/<int:cat_id>/', ShowCat.as_view(), name='category'),
     # path('prod/<int:prod_id>/',show_prod, name='prod'),
@@ -25,12 +31,12 @@ urlpatterns = [
     path('pay_order/<int:order_id>', pay_order, name='pay_order'),
     path('order_list/', OrderList.as_view(), name='order_list'),
 # Для работы через API
-#     path('api/productlist/', ProductsAPIView.as_view()),
-    path('api/crud_prod/', ProductAPI_RC.as_view()),
-    path('api/crud_prod/<int:pk>/', ProductAPI_RUD.as_view()),
-    # path('api/crud_prod/<int:pk>/', ProductAPI_U.as_view()),
-  # path('api/crud_prod/', CRUD_Prod_API.as_view()),
-  #   path('api/crud_prod/<int:pk>/', CRUD_Prod_API.as_view()),
+
+    path('api/', include(router.urls)),
+    # path('api/crud_prod/', ProductViewSet.as_view({'get' : 'list'})),
+    # path('api/crud_prod/<int:pk>/', ProductViewSet.as_view({'put' : 'update'})),
+    # path('api/crud_prod/', ProductAPI_RC.as_view()),
+    # path('api/crud_prod/<int:pk>/', ProductAPI_RUD.as_view()),
 
 
 
