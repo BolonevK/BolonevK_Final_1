@@ -2,7 +2,9 @@
 {% load main_tags %}
 
 {% block content %}
+<!-- Отображение общей суммы товаров по заказу -->
 <h1>Итоговая сумма заказа: {{ order.0.order.coast }} руб. </h1>
+<!-- Проверка является ли заказ "корзиной" и  отображение соответствующих кнопок-->
 {% if order.0.order.box == True %}
 	<p class="link-add-box" ><a href="{{ order.0.order.get_absolute_url }}">Оформить заказ</a></p>
 {% else %}
@@ -18,7 +20,7 @@
 	<li><div class="article-panel">
 	<p class="first">{{p.cat}}</p>
 	</div>
-
+<!-- Отображение списка товара в заказе -->
 	{% if o.item.image %}
 		<p><img class="img-article-left thumb" src="{{ o.item.image.url }}"></p>
 	{% endif %}
@@ -27,7 +29,7 @@
 	<div class="clear"></div>
 	<p>Цена: {{o.item.coast}} руб.</p>
 	<p>количество в корзине: {{ o.i_count }}</p>
-
+<!-- Отображение кнопок по товару, в соответствии статуса заказа -->
 	<p class="link-read-post">
 		{% if order.0.order.box %}
 		<a href="{% url 'del_box' o.item.id %}">Удалить</a>

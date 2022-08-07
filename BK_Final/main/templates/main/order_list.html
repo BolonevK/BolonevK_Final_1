@@ -3,23 +3,27 @@
 
 {% block content %}
 <ul class="list-articles">
+	<!-- Отображение информации о пользователе -->
 	<h1> {{ request.user.first_name }} {{ request.user.last_name }}</h1>
 	<li>Логин   : {{ request.user.username }} </li>
 	{% if client%}
 		<li>Телефон : {{ client.phone }} </li>
 		<li>Адрес   : {{ client.address }} </li>
 	{% endif %}
-
 <p class="link-read-post"><a href="{% url 'det_user' request.user.pk %}">Редактировать</a>
+	<!-- Конец Отображение информации о пользователе -->
 </ul>
+<!-- Отображение списка заказов -->
 <ul class="list-articles">
 	{% for o in order %}
 	<li><div class="article-panel">
 	<p class="first">{{p.cat}}</p>
 	</div>
+	<!-- Отображение деталей заказа -->
 	<li><h2>Номер заказа: {{o.id}}</h2>
 	<p>Сумма заказа : {{o.coast}} </p>
 	<p>Дата создания заказа : {{o.date_create}} </p>
+	<!-- Отображение соответствующего статуса заказа -->
 	{% if o.coast == 0 %}
 		<p>Статус: <font color="#ff002f">Необходимо добавить товар в корзину</font></p>
 	{% elif o.box %}
@@ -31,6 +35,7 @@
 	{% else %}
 		<p>Статус: <font color="#187317">Заказ выполнен</font></p>
 	{% endif %}
+	<!-- Коней Отображения статуса заказа -->
 	<div class="clear"></div>
 	{% if o.coast > 0 %}
 		<p class="link-read-post"><a href="{% url 'show_box' o.pk %}">Подробней</a>

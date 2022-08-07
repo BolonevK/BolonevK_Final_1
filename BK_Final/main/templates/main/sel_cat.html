@@ -1,10 +1,12 @@
 	<td valign="top" class="left-chapters">
 	<ul id="leftchapters">
+<!-- Отображение наименования "все категории", если значение переменной sel_cat = 0, то оображаем как текст, иначе как ссылка-->
 {% if sel_cat == 0 %}
 		<li class="selected">Все категории</li>
 {% else %}
 		<li><a href="{% url 'home' %}">Все категории</a></li>
 {% endif %}
+<!-- Отображение пунктов категорий, если указана текущая категория , она отображается как текст, иначе как ссылка -->
 {% for c in cats %}
 	{% if c.pk == sel_cat %}
 		<li class="selected">{{c.name}}</li>

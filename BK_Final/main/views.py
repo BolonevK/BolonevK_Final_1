@@ -13,9 +13,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-
-
 from .forms import *
 from .models import *
 from .permissions import IsAdminOrReadOnly
@@ -36,48 +33,51 @@ menu = [{'title': "О проекте", 'url_name': 'about'},    # Пункты �
         {'title': "Выйти", 'url_name': 'logout_user'},
         ]
 
+
+
 # страница "О проекте"
 def about(request):
     return render(request, 'main/about.html', context={'menu' : menu})
 
+# Вызов админ панели
 def admin_panel(request):
     return render(request, '/admin/')
 
 # Гланая страница проекта
 class MarketMain(DataMixin,ListView):
-    model = Products                    # строится на отображении обьектов модели Products
-    template_name = 'main/index.html'
-    context_object_name = 'prod'
+    model = Products                        # строится на отображении объектов модели Products
+    template_name = 'main/index.html'       # указывает на вызываемую страницу
+    context_object_name = 'prod'            # переменная передаваемая в контекст переменных
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Главная страница')
-        return dict(list(context.items()) + list(c_def.items()))
+    def get_context_data(self, *, object_list=None, **kwargs):  # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)            # получаем уже имеющийся контекст
+        c_def = self.get_user_context(title='Главная страница') # формируем дополнение к контексту
+        return dict(list(context.items()) + list(c_def.items()))    # передаем обьединенный контекст переменных на страницу
 
-
+# класс отображения "Корзины" и заказа
 class ShowBox(DataMixin,ListView):
-    model = OrderItems
-    template_name = 'main/show_box.html'  # адрес страницы, для для создания формы
-    context_object_name = 'order'
+    model = OrderItems                      # модель на основе котоой строится форма
+    template_name = 'main/show_box.html'    # адрес страницы, для для создания формы
+    context_object_name = 'order'           # переменная передаваемая в контекст переменных
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Информация по заказу')
-        return dict(list(context.items()) + list(c_def.items()))
+    def get_context_data(self, *, object_list=None, **kwargs):      # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)                # получаем уже имеющийся контекст
+        c_def = self.get_user_context(title='Информация по заказу') # формируем дополнение к контексту
+        return dict(list(context.items()) + list(c_def.items()))    # передаем обьединенный контекст переменных на страницу
 
-    def get_queryset(self):
-        try:
+    def get_queryset(self):                 # функция по отбору данных для формы
+        try:                                # пробуем получить номер заказа по пользователю и номеру заказа, что ы избежать возможность просматривать заказы других пользователей
             user_box = Orders.objects.get(user_id=self.request.user.pk, id=self.kwargs['order_id'])
-        except:
-            if self.request.user.is_staff:
-                try:
+        except:                             # если не получилось найти заказ
+            if self.request.user.is_staff:  # проверяем имеет ли пользователь флаг is_staff
+                try:                        # пробуем получить обьект заказа как администратор
                     user_box = Orders.objects.get(id=self.kwargs['order_id'])
                 except:
-                    raise Http404()
-        return OrderItems.objects.filter(order_id=user_box.pk, i_count__gt=0)
+                    raise Http404()         # если не получилось получить обьект заказа выдаем страницу с ошибкой 404
+        return OrderItems.objects.filter(order_id=user_box.pk, i_count__gt=0)   # получаем товары, которые находятся в корзине и количество которых больше 0
 
-
-class ShowCat(DataMixin,ListView):            # Отображение товара по категориям
+# Отображение товара по категориям
+class ShowCat(DataMixin,ListView):
     model = Products                # указание модель на основе которой будет строиться форма
     template_name = 'main/index.html'  # адрес страницы, для для создания формы
     context_object_name = 'prod'    # наименование переменной для HTML страницы
@@ -86,193 +86,202 @@ class ShowCat(DataMixin,ListView):            # Отображение това�
     def get_queryset(self):
         return Products.objects.filter(cat_id=self.kwargs['cat_id'])     # условие для отбора данных модели.
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title='Категория - '+ str(context['prod'][0].cat),
+    def get_context_data(self, *, object_list=None, **kwargs):  # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)            # получаем уже имеющийся контекст
+        c_def = self.get_user_context(title='Категория - '+ str(context['prod'][0].cat),    # формируем дополнение к контексту
                                       sel_cat = context['prod'][0].cat_id)
-        return dict(list(context.items()) + list(c_def.items()))
+        return dict(list(context.items()) + list(c_def.items()))         # передаем обьединенный контекст переменных на страницу
 
+# отображение данных о пользователе и списка его заказов
 class OrderList(DataMixin,ListView):
-    model = Orders
-    template_name = 'main/order_list.html'
-    context_object_name = 'order'
+    model = Orders                          # указание модель на основе которой будет строиться форма
+    template_name = 'main/order_list.html'  # адрес страницы, для для создания формы
+    context_object_name = 'order'           # наименование переменной для HTML страницы
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        try:
-            client = Clients.objects.get(user_id=self.request.user.pk)
-            c_def = self.get_user_context(title='Заказы', client=client)
-            return dict(list(context.items()) + list(c_def.items()))
+    def get_context_data(self, *, object_list=None, **kwargs):  # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)             # получаем уже имеющийся контекст
+        try:             # пробуем получить дополнительные данные о пользователе (адрес, телефон)
+            client = Clients.objects.get(user_id=self.request.user.pk)      # это не обязательные данные, пользователь мог не ввести их при регистрации
+            c_def = self.get_user_context(title='Заказы', client=client)    # формируем дополнение к контексту
+            return dict(list(context.items()) + list(c_def.items()))        # передаем обьединенный контекст переменных на страницу
         except:
-            return context
-    def get_queryset(self):
-        try:
+            return context      # если доп. данные о пользователе получиь не удалось, возвращаем контекст как есть
+
+    def get_queryset(self):     # условие для отбора данных модели.
+        try:                    # пробуем выбрать все заказы пользователя по user.pk
             ord = Orders.objects.filter(user_id=self.request.user.pk)
-        except:
-            raise Http404()
-        return ord
+        except:                 # если выбрать не удалось, например польщователь вручную ввел адрес с неправильным заказом
+            raise Http404()     # возвращаем страницу 404
+        return ord              # если все хорошо возвращаем queryset с заказами
 
+# отображение подробной информации о товаре
 class ShowProd(DataMixin,DetailView):
-    model = Products  # указание модель на основе которой будет строиться форма
-    template_name = 'main/show_prod.html'  # адрес страницы, для для создания формы
-    pk_url_kwarg = 'prod_id'
-    context_object_name = 'prod'  # наименование переменной для HTML страницы
+    model = Products                        # указание модель на основе которой будет строиться форма
+    template_name = 'main/show_prod.html'   # адрес страницы, для для создания формы
+    pk_url_kwarg = 'prod_id'                # переменная, которая передается из url
+    context_object_name = 'prod'            # наименование переменной для HTML страницы
 
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        fb = FeedBack.objects.filter(product=self.kwargs['prod_id'])
-        sr = fb.aggregate(Avg('fb_mark'))
-        c_def = self.get_user_context(title='Подробно о товаре', sel_cat=context['object'].cat_id,
+    def get_context_data(self, *, object_list=None, **kwargs):  # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)            # получаем уже имеющийся контекст
+        fb = FeedBack.objects.filter(product=self.kwargs['prod_id'])    # получаем queryset с отзывами по определенному товару
+        sr = fb.aggregate(Avg('fb_mark'))                       # получаем среднюю оценку по отзывам
+        c_def = self.get_user_context(title='Подробно о товаре',  # формируем дополнение к контексту
+                                      sel_cat=context['object'].cat_id,
                                       fb=fb, sr=sr['fb_mark__avg'])
-        return dict(list(context.items()) + list(c_def.items()))
+        return dict(list(context.items()) + list(c_def.items()))    # передаем обьединенный контекст переменных на страницу
 
-
-
+# функция по добавлению товара в "корзину" пользователя
 def add_box(request,prod_id):
-    if request.user.is_authenticated:
-        prod = Products.objects.get(pk=prod_id)
-        try:# Проверка на существование товара в корзине клиента
+    if request.user.is_authenticated:       # проверяем пользователя на авторизацию
+        prod = Products.objects.get(pk=prod_id)     # получаем объект товара
+        try:                                        # Проверка на наличия уже открытого заказа у клиента
             user_box = Orders.objects.get(user_id=request.user.pk, box= True)
-            user_box.coast += prod.coast
-        except:
+            user_box.coast += prod.coast            # если заказ есть, то увеличиваем сумму заказа
+        except:                                     # если открытого заказа нет, то создаем новый
             user_box = Orders(user= request.user, coast= prod.coast)
-        user_box.save()
-        try:
+        user_box.save()                             # сохраняем заказ
+        try:                                        # Проверка на существование данного товара в корзине клиента
             oitem = OrderItems.objects.get(order_id=user_box.pk, item_id=prod.pk)
-            oitem.i_count += 1
-        except:
+            oitem.i_count += 1                      # Если такой товар уже есть в "корзине", то увеличиваем его количество
+        except:                                     # Если товар новый , то добавляем его в "корзину"
             oitem = OrderItems(order_id=user_box.pk, item_id=prod.pk, i_count=1)
-        oitem.save()
-        return redirect('prod', prod_id)
+        oitem.save()                                 # сохраняем запись о товаре
+        return redirect('prod', prod_id)             # переход на страницу описания товара
     else:
-        return redirect('login')
+        return redirect('login')     # усли польщователь не авторизован, переходим на страницу авторизации
 
+# удаление товара из корзины
 def del_box(request,prod_id):
-    prod = Products.objects.get(pk=prod_id)
-    user_box = Orders.objects.get(user_id=request.user.pk, box=True)
-    user_box.coast -= prod.coast
-    user_box.save()
-    oitem = OrderItems.objects.get(order_id=user_box.pk, item_id=prod.pk)
-    oitem.i_count -= 1
-    oitem.save()
-    if OrderItems.objects.filter(order_id=user_box.pk, i_count__gt=0).exists():
-        return redirect('show_box', user_box.pk)
+    prod = Products.objects.get(pk=prod_id)       # получаем объект товара
+    user_box = Orders.objects.get(user_id=request.user.pk, box=True)     # получаем объект заказа
+    user_box.coast -= prod.coast                  # уменьшаем сумму заказа на стоимость удаляемого товара
+    user_box.save()                               # сохраняем заказ
+    oitem = OrderItems.objects.get(order_id=user_box.pk, item_id=prod.pk) # получаем строку копонента заказа (т.е. товара который находится в заказе пользователя)
+    oitem.i_count -= 1                            # уменьшаем его количество на 1
+    oitem.save()                                  # сохраняем компонент заказа
+    if OrderItems.objects.filter(order_id=user_box.pk, i_count__gt=0).exists():  # если количество товара в заказе осталось > 0
+        return redirect('show_box', user_box.pk)        # то просто обновляем страницу
     else:
-        return redirect('order_list')
+        return redirect('order_list')               # если товара в заказе не осталось, то переходим на страницу пользователя
 
+# добавление отзыва
 def add_feedback(request,prod_id):
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            form = AddFeedbackForm(request.POST)
-            fb = FeedBack(fb_text=form.data['fb_text'],
+    if request.user.is_authenticated:                # проверка пользователя на аутентификацию
+        if request.method == 'POST':                 # проверка метода
+            form = AddFeedbackForm(request.POST)         # создаем объект формы и берем данные с формы
+            fb = FeedBack(fb_text=form.data['fb_text'],      # создаем объект отзыва, по данным с формы
                           fb_mark=form.data['fb_mark'],
                           product=Products.objects.get(pk=prod_id),
                           user=User.objects.get(pk=request.user.id))
-            fb.save()
-            return redirect('prod', prod_id)
-        else:
-            form = AddFeedbackForm()
-        prod = Products.objects.get(pk=prod_id)
-        context = {
+            fb.save()                                   # созраняем отзыв
+            return redirect('prod', prod_id)            # переходим на страницу отображающую подробную информацию о товаре
+        else:                                           # если метод GET
+            form = AddFeedbackForm()                    # создаем объект формы
+        prod = Products.objects.get(pk=prod_id)         # получаем объект продукта
+        context = {                                     # создаем контекст переменных
             'prod': prod,
             'menu': menu,
             'title': 'Добавление отзыва о товаре',
             'form' : form,
             'prod_id': prod_id
         }
-        return render(request,'main/feedback.html',context=context)
-    else:
-        return redirect('login')
-def det_user(request,user_id):
-    if request.user.is_authenticated:
-        if request.method == 'POST':
-            form = DetailsUserForm(request.POST)
-            if Clients.objects.filter(user_id=user_id).exists():
-                usr = Clients.objects.get(user_id=user_id)
-            else:
-                usr = Clients()
-                usr.user_id=user_id
-                usr.save()
+        return render(request,'main/feedback.html',context=context) # переходим на страницу отзывов и передаем ей контекст
+    else:                                               # если пользователь не авторизован
+        return redirect('login')                        # переходим на страницу авторизации
 
-            usr.address=form.data['address']
-            usr.phone=form.data['phone']
-            usr.save()
-            return redirect('order_list')
-        else:
-            form = DetailsUserForm()
-            form.data['phone'] = '+7'
-        context = {
+# заполнение дополнительных данных о пользователе (адрес, телефон)
+def det_user(request,user_id):
+    if request.user.is_authenticated:                   # проверка польщователя на аутентификацию
+        if request.method == 'POST':                    # проверка метода зароса
+            form = DetailsUserForm(request.POST)        # создаем объект формы с данными полученых в POST запросе
+            if Clients.objects.filter(user_id=user_id).exists():    # если доп данные о пользователе уже существуют
+                usr = Clients.objects.get(user_id=user_id)          # то получаем эти данные
+            else:                                       # если доп данные о клиенте отсутствуют
+                usr = Clients()                         # создаем объект данных
+                usr.user_id=user_id                     # связываем данные с ид польщователя
+                usr.save()                              # сохраняем созданый объект
+
+            usr.address=form.data['address']            # устанавливаем данные адреса
+            usr.phone=form.data['phone']                # устанавливаем данные телефона
+            usr.save()                                  # сохраняем объект
+            return redirect('order_list')               # переход на страницу отображения заказов, на которой так же отображаются данные пользователя
+        else:                                           # если метод GET
+            form = DetailsUserForm()                    # создаем объект формы
+            # form.data['phone'] = '+7'
+        context = {                                     # создаем контекст переменных
             'menu': menu,
             'title': 'Дополнительная информация',
             'form' : form,
-        }
+        }                                               # переходим на страницу доп данных пользователя
         return render(request,'main/det_user.html',context=context)
-    else:
-        return redirect('login')
+    else:                                               # если польщователь не авторизирован
+        return redirect('login')                        # переходим на страницу авторизации
 
+# перевод заказа из статуса "корзина" в статус "заказ сформирован"
 def make_order(request,order_id):
-    oitems = OrderItems.objects.filter(order_id=order_id)
-    for oi in oitems:
-        pr = Products.objects.get(pk=oi.item_id)
-        pr.balance -= oi.i_count
-        pr.save()
-    order = Orders.objects.get(pk=order_id)
-    order.box = False
-    order.save()
-    return redirect('show_box',order_id)
+    oitems = OrderItems.objects.filter(order_id=order_id)   # получение перечня товаров в заказе
+    for oi in oitems:                                   # перебор товара в заказе
+        pr = Products.objects.get(pk=oi.item_id)        # получение объекта товара по ид из заказа
+        pr.balance -= oi.i_count                        # уменьшение количества товара на остатке, на количество товара из заказа
+        pr.save()                                       # созранение изменений по товару
+    order = Orders.objects.get(pk=order_id)             # полученение объекта заказа
+    order.box = False                                   # установка флага box в значение False, что озночает что заказ перешел
+    order.save()                                        # из статуса "Корзина" в статус "заказ сформирован"
+    return redirect('show_box',order_id)                # обновление страницы отображения заказа
 
+# установка флага оплачено по заказу
 def pay_order(request,order_id):
-    order = Orders.objects.get(pk=order_id)
-    order.pay_it = True
-    order.save()
-    return redirect('show_box',order_id)
+    order = Orders.objects.get(pk=order_id)             # получение объекта заказа
+    order.pay_it = True                                 # перевод флага оплаты в значение True
+    order.save()                                        # сохранение изменений
+    return redirect('show_box',order_id)                # обновление страницы
 
-
+# регистрация нового пользователя
 class RegisterUser(DataMixin,CreateView):
-    form_class = RegisterUserForm
-    template_name = 'main/register.html'
-    success_url = reverse_lazy('login')
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title="Регистрация")
-        return dict(list(context.items()) + list(c_def.items()))
+    form_class = RegisterUserForm                       # указание стандартной формы регистрации
+    template_name = 'main/register.html'                # привязка страницы к форме
+    success_url = reverse_lazy('login')                 # при успешной регистрации, переход на форму авторизации
+    def get_context_data(self, *, object_list=None, **kwargs):  # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)            # получение уже имеющихся данных
+        c_def = self.get_user_context(title="Регистрация")      # формирование дополнительных данных
+        return dict(list(context.items()) + list(c_def.items()))    # передаем обьединенный контекст переменных на страницу
 
-    def form_valid(self, form):
-        user = form.save()
-        login(self.request, user)
-        return redirect('det_user',user.pk)
+def form_valid(self, form):                             # проверка на корректность заполненых данных
+        user = form.save()                              # сохранение пользователя
+        login(self.request, user)                       # авторизация под новым пользователем
+        return redirect('det_user',user.pk)             # переход на страницу для заполнения дополнительных данных о пользователе
 
-
+# авторизация пользоателя
 class LoginUser(DataMixin, LoginView):
-    form_class = LoginUserForm
-    template_name = 'main/login.html'
-    def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(**kwargs)
-        c_def = self.get_user_context(title="Авторизация")
-        return dict(list(context.items()) + list(c_def.items()))
+    form_class = LoginUserForm                          # указание стандартной формы авторизации
+    template_name = 'main/login.html'                   # привязка страницы к форме
+    def get_context_data(self, *, object_list=None, **kwargs):  # функция получения и обогащения контекста данных
+        context = super().get_context_data(**kwargs)            # получение уже имеющихся данных
+        c_def = self.get_user_context(title="Авторизация")      # формирование дополнительных данных
+        return dict(list(context.items()) + list(c_def.items()))    # передаем обьединенный контекст переменных на страницу
 
     def get_success_url(self):
-        return reverse_lazy('home')
+        return reverse_lazy('home')                      # при успешной авторизации переход на главную страницу
 
-
+# выход пользователя
 def logout_user(request):
-    logout(request)
-    return redirect('login')
+    logout(request)                                     # разлогиневание пользователя
+    return redirect('login')                            # преход на страницу для авторизации
 
 #================================ API ====================================
-
+# вью сет для работы с API
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Products.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = (IsAdminOrReadOnly,)
+    queryset = Products.objects.all()                   # привязка вью сета к модели
+    serializer_class = ProductSerializer                # привязка вью сета к сериалайзеру
+    permission_classes = (IsAdminOrReadOnly,)           # подключение созданой модели пермишена
 
-    @action(methods=['get'], detail=False)
+    @action(methods=['get'], detail=False)              # подключение возможности запроса данных о категориях товара (как связаной таблицы)
     def category(self,request):
-        cats = PCategories.objects.all()
-        cat_dict = []
-        for c in cats:
-            cat_dict.append({'id': c.id,'name': c.name})
-        return Response({'category': cat_dict})
+        cats = PCategories.objects.all()                # получение queryset по всем категориям
+        cat_dict = []                                   # фомирование переменной с пустым масивом
+        for c in cats:                                  # перебор qveryseta категрий
+            cat_dict.append({'id': c.id,'name': c.name})    # формирование данных в нужной форме, для отправки ответа
+        return Response({'category': cat_dict})         # возврат ответа на запрос
 
 
 
